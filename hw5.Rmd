@@ -1,0 +1,64 @@
+---
+title: "hw5"
+author: "Sai Gugulothu"
+date: "4/11/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+if (file.exists("alcohol.rds")) {
+  data <- readRDS("alcohol.rds")
+} else {
+  url <- "https://xdaiisu.github.io/ds202materials/data/ames.csv"
+  data <- readr::read_csv(url)
+  saveRDS(data, file="alcohol.rds")
+} 
+
+dat <- readRDS('alcohol.rds')
+```
+
+Data Cleaning 
+
+```{r}
+library(tidyverse)
+library(lubridate)
+location <- data %>% select('Store Location') %>%
+  separate('Store Location', c('Street', 'City','Long/Lat'), sep="\n")
+location <- location %>% 
+  select('Long/Lat') %>%
+  separate('Long/Lat', c('Longitude', 'Latitude'), sep=", ")
+location$Longitude <- gsub('[(]', "", paste(location$Longitude))
+location$Latitude <- gsub('[)]', "", paste(location$Latitude))
+location
+```
+
+
+```{r}
+str(dat)
+```
+
+
+```{r}
+library(lubridate)
+dat$`Invoice/Item Number` <- as.numeric(gsub('INV-', '', paste(data$`Invoice/Item Number`)))
+dat$`Vendor Number` <- as.numeric(data$`Vendor Number`)
+dat$Date <- mdy(dat$Date)
+str(dat)
+
+```
+#3
+```{r}
+
+ggplot(location, aes(x=as.numeric(Longitude), y=as.numeric(Latitude))) + geom_point()
+
+```
+
+#4 
+```{r}
+ames <- dat %>%filter(City=='Ames', Year=='2018')
+summary(ames$`Bottles Sold`)
+summary(ames$`Volume Sold (Liters)`)
+summary(ames$`Sale (Dollars)`)
+ggplot(ames, aes(x=Day, y=`Volume Sold (Liters)`)) + geom_line() + facet_wrap(~ Month)
+```
+
